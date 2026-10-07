@@ -1,0 +1,2 @@
+# UETransportERP - MAINTENANCE MANAGEMENT
+To create/ delete/ update maintenance records for each vehicle in the fleet, integrate with Firebase for image upload and integrate with Temporal for wf-driven approval for maintenance records.

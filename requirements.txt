@@ -1,0 +1,14 @@
+fastapi
+python-multipart
+uvicorn[standard]
+sqlalchemy==2.0.51
+psycopg2-binary
+python-dotenv
+pandas
+requests
+pydantic
+msal
+bcrypt
+firebase-admin
+PyJWT
+reportlab==5.0.1

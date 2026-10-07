@@ -1,0 +1,75 @@
+WORKFLOW_CONFIGURATION_NOT_FOUND = "WORKFLOW_CONFIGURATION_NOT_FOUND"
+REQUESTER_ROUTE_NOT_FOUND = "REQUESTER_ROUTE_NOT_FOUND"
+WORKFLOW_INSTANCE_NOT_FOUND = "WORKFLOW_INSTANCE_NOT_FOUND"
+WORKFLOW_INSTANCE_NOT_CONFIGURED = "WORKFLOW_INSTANCE_NOT_CONFIGURED"
+CURRENT_APPROVER_MISMATCH = "CURRENT_APPROVER_MISMATCH"
+WORKFLOW_APPROVE_PERMISSION_REQUIRED = "WORKFLOW_APPROVE_PERMISSION_REQUIRED"
+WORKFLOW_SUBMIT_PERMISSION_REQUIRED = "WORKFLOW_SUBMIT_PERMISSION_REQUIRED"
+AUTHENTICATED_PRINCIPAL_MISMATCH = "AUTHENTICATED_PRINCIPAL_MISMATCH"
+LEGACY_WORKFLOW_TABLE_NOT_ALLOWED = "LEGACY_WORKFLOW_TABLE_NOT_ALLOWED"
+WORKFLOW_ALREADY_TERMINAL = "WORKFLOW_ALREADY_TERMINAL"
+INVALID_WORKFLOW_GRAPH = "INVALID_WORKFLOW_GRAPH"
+UNSUPPORTED_WORKFLOW_ACTION = "UNSUPPORTED_WORKFLOW_ACTION"
+REQUESTER_USER_INVALID = "REQUESTER_USER_INVALID"
+APPROVER_USER_INVALID = "APPROVER_USER_INVALID"
+APPROVER_APPROVE_PERMISSION_MISSING = "APPROVER_APPROVE_PERMISSION_MISSING"
+REQUESTER_SUBMIT_PERMISSION_MISSING = "REQUESTER_SUBMIT_PERMISSION_MISSING"
+ORGANIZATION_ID_REQUIRED = "ORGANIZATION_ID_REQUIRED"
+REQUESTER_USER_REQUIRED = "REQUESTER_USER_REQUIRED"
+WORKFLOW_ENGINE_MIGRATION_REQUIRED = "WORKFLOW_ENGINE_MIGRATION_REQUIRED"
+WORKFLOW_EXECUTION_ALREADY_STARTED = "WORKFLOW_EXECUTION_ALREADY_STARTED"
+WORKFLOW_DRAFT_EDGE_NODE_INVALID = "WORKFLOW_DRAFT_EDGE_NODE_INVALID"
+WORKFLOW_ADMIN_PERMISSION_REQUIRED = "WORKFLOW_ADMIN_PERMISSION_REQUIRED"
+WORKFLOW_REQUEST_ID_REQUIRED = "WORKFLOW_REQUEST_ID_REQUIRED"
+WORKFLOW_STEP_NOT_CURRENT = "WORKFLOW_STEP_NOT_CURRENT"
+WORKFLOW_INSTANCE_TYPE_MISMATCH = "WORKFLOW_INSTANCE_TYPE_MISMATCH"
+WORKFLOW_INSTANCE_STEP_ID_REQUIRED = "WORKFLOW_INSTANCE_STEP_ID_REQUIRED"
+WORKFLOW_IDENTIFIER_MISMATCH = "WORKFLOW_IDENTIFIER_MISMATCH"
+WORKFLOW_PENDING_CONFLICT = "WORKFLOW_PENDING_CONFLICT"
+
+
+ERROR_MESSAGES = {
+    WORKFLOW_CONFIGURATION_NOT_FOUND: "Published workflow configuration was not found.",
+    REQUESTER_ROUTE_NOT_FOUND: "Requester is not represented by exactly one executable route.",
+    WORKFLOW_INSTANCE_NOT_FOUND: "Workflow instance was not found.",
+    WORKFLOW_INSTANCE_NOT_CONFIGURED: "Workflow request is not linked to a configured workflow instance.",
+    CURRENT_APPROVER_MISMATCH: "Workflow step is assigned to another approver.",
+    WORKFLOW_APPROVE_PERMISSION_REQUIRED: "Acting user does not have WORKFLOW/APPROVE rights.",
+    WORKFLOW_SUBMIT_PERMISSION_REQUIRED: "Requester does not have WORKFLOW/SUBMIT rights.",
+    AUTHENTICATED_PRINCIPAL_MISMATCH: "Payload principal does not match authenticated user.",
+    LEGACY_WORKFLOW_TABLE_NOT_ALLOWED: "Legacy workflow table is not allowlisted.",
+    WORKFLOW_ALREADY_TERMINAL: "Workflow request is already terminal.",
+    INVALID_WORKFLOW_GRAPH: "Workflow graph is invalid.",
+    UNSUPPORTED_WORKFLOW_ACTION: "Workflow action is not supported.",
+    REQUESTER_USER_INVALID: "Requester must be an active ERP user.",
+    APPROVER_USER_INVALID: "Approver must be an active ERP user.",
+    APPROVER_APPROVE_PERMISSION_MISSING: "Approver lacks WORKFLOW/APPROVE.",
+    REQUESTER_SUBMIT_PERMISSION_MISSING: "Requester lacks WORKFLOW/SUBMIT.",
+    ORGANIZATION_ID_REQUIRED: "Organization id is required.",
+    REQUESTER_USER_REQUIRED: "Requester user principal is required.",
+    WORKFLOW_ENGINE_MIGRATION_REQUIRED: "Workflow Engine migration has not been applied.",
+    WORKFLOW_EXECUTION_ALREADY_STARTED: "Workflow execution already started for this instance.",
+    WORKFLOW_DRAFT_EDGE_NODE_INVALID: "Draft edge source and target must reference nodes in the draft.",
+    WORKFLOW_ADMIN_PERMISSION_REQUIRED: "Authenticated user does not have workflow administration rights.",
+    WORKFLOW_REQUEST_ID_REQUIRED: "workflow_request_id is required.",
+    WORKFLOW_STEP_NOT_CURRENT: "Workflow step is not the current pending step for this instance.",
+    WORKFLOW_INSTANCE_TYPE_MISMATCH: "Workflow instance does not match the expected workflow domain.",
+    WORKFLOW_INSTANCE_STEP_ID_REQUIRED: "workflow_instance_step_id is required for configured workflow instances.",
+    WORKFLOW_IDENTIFIER_MISMATCH: "Supplied workflow identifiers do not refer to the same workflow transaction.",
+    WORKFLOW_PENDING_CONFLICT: "A pending workflow already exists for this business transaction.",
+}
+
+
+def workflow_error_response(
+    error_code: str,
+    workflow_status: str = "ERROR",
+    **extra,
+) -> dict:
+    response = {
+        "workflow_confirmation": "N",
+        "workflow_status": workflow_status,
+        "error_code": error_code,
+        "error": ERROR_MESSAGES.get(error_code, error_code),
+    }
+    response.update(extra)
+    return response

@@ -1,0 +1,2 @@
+# PDF content inspection only; not needed by the production renderer.
+pypdf==6.19.0

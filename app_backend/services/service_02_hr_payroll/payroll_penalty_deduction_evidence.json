@@ -1,0 +1,1296 @@
+{
+  "updated_at_utc": "2026-10-01T06:28:41.432620+00:00",
+  "database_inspection": {
+    "mode": "READ ONLY",
+    "server_version": [
+      {
+        "server_version": "18.6 (Debian 18.6-1.pgdg13+2)"
+      }
+    ],
+    "columns_before_change": [
+      {
+        "column_name": "total_deduction",
+        "data_type": "numeric",
+        "numeric_precision": 18,
+        "numeric_scale": 2,
+        "is_nullable": "YES",
+        "column_default": null,
+        "is_generated": "ALWAYS",
+        "generation_expression": "((((((((unpaid_leave_deduction + loan_deduction) + advance_deduction) + fine_deduction) + fuel_deduction) + salik_deduction) + darb_deduction) + charging_cost_deduction) + other_deduction_amount)"
+      },
+      {
+        "column_name": "net_salary",
+        "data_type": "numeric",
+        "numeric_precision": 18,
+        "numeric_scale": 2,
+        "is_nullable": "YES",
+        "column_default": null,
+        "is_generated": "ALWAYS",
+        "generation_expression": "\nCASE\n    WHEN ((correction_net_amount <> (0)::numeric) OR (correction_recovery_amount <> (0)::numeric)) THEN GREATEST(correction_net_amount, (0)::numeric)\n    ELSE ((((((((basic_salary + monthly_allowance) + accommodation_allowance) + overtime_amount) + bonus_amount) + incentive_amount) + reimbursement_amount) + other_earning_amount) - ((((((((unpaid_leave_deduction + loan_deduction) + advance_deduction) + fine_deduction) + fuel_deduction) + salik_deduction) + darb_deduction) + charging_cost_deduction) + other_deduction_amount))\nEND"
+      },
+      {
+        "column_name": "penalty_deduction",
+        "data_type": "numeric",
+        "numeric_precision": 18,
+        "numeric_scale": 2,
+        "is_nullable": "YES",
+        "column_default": null,
+        "is_generated": "NEVER",
+        "generation_expression": null
+      }
+    ],
+    "correction_recovery_constraint_before": [
+      {
+        "conname": "chk_payroll_detail_correction_recovery_limit",
+        "definition": "CHECK ((correction_recovery_amount <= ((((((((unpaid_leave_deduction + loan_deduction) + advance_deduction) + fine_deduction) + fuel_deduction) + salik_deduction) + darb_deduction) + charging_cost_deduction) + other_deduction_amount)))"
+      }
+    ],
+    "views": [],
+    "materialized_views": [],
+    "functions": [],
+    "triggers": []
+  },
+  "production_changes_applied": false,
+  "isolated_test_database_version": "18.6",
+  "tests": {
+    "distinct_cases": 297,
+    "passed": 297,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "executions": [
+      {
+        "suite": "Combined Payroll and Task164 regressions plus three legacy functions",
+        "run": 296,
+        "passed": 296
+      },
+      {
+        "suite": "Final Payroll component and comprehensive regressions after terminal correction guard adjustment",
+        "run": 64,
+        "passed": 64
+      }
+    ],
+    "cases": [
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollApiTests.test_consolidated_api_contains_payroll_routes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollApiTests.test_hr_payroll_api_endpoint_calls_logic_function",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollApiTests.test_hr_payroll_workflow_api_endpoint_calls_workflow_function",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollApiTests.test_off_cycle_source_business_errors_return_4xx",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_all_correction_deduction_types_are_preserved_with_signed_net",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_all_correction_earning_types_set_signed_positive_correction_net",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_cancel_off_cycle_run_releases_adjustments_and_cancels_recovery",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_cancel_recoveries_marks_applied_ledger_cancelled",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_cancelled_or_paid_run_cannot_be_processed",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_corr_2026_08_named_employee_totals_return_signed_net_correction",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_correction_deduction_greater_than_available_recovery_does_not_consume_adjustment",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_correction_deduction_only_records_recovery_without_salary_offset",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_correction_header_period_source_ambiguity_requires_explicit_source",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_correction_header_period_source_missing_returns_clean_business_error",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_correction_mixed_earning_and_deduction_recovers_only_shortfall",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_correction_multiple_deductions_for_one_employee_are_preserved",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_correction_process_uses_header_period_source_without_frontend_source_fields",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_correction_recovery_insert_failure_does_not_mark_adjustments",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_correction_source_selector_defaults_to_header_period",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_create_payroll_run_conflicts_with_cancelled_duplicate_code",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_create_payroll_run_conflicts_with_completed_duplicate_code",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_create_payroll_run_rejects_code_longer_than_schema_limit",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_create_payroll_run_reuses_matching_draft_after_concurrent_insert",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_create_payroll_run_reuses_matching_draft_header",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_create_payroll_run_unique_violation_returns_clean_conflict",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_duplicate_adjustment_processing_is_blocked",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_duplicate_employee_in_run_is_blocked",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_monthly_payroll_with_fixed_salary_only",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_monthly_payroll_with_overtime_and_transport_deductions",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_multiple_adjustments_of_same_type_are_summed",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_multiple_sequential_corrections_respect_remaining_source_balance",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_off_cycle_bonus_only_keeps_fixed_salary_zero",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_off_cycle_earning_only_consumes_adjustment_without_fixed_salary",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_off_cycle_zero_net_consumes_adjustments_without_prior_balance",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollLogicTests.test_payroll_run_totals_are_returned_from_database_generated_columns",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollWorkflowTests.test_rejected_workflow_keeps_payroll_run_processed",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollWorkflowTests.test_self_approval_workflow_approves_run",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollWorkflowTests.test_sequential_approval_workflow_creates_pending_request",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_module_comprehensive.PayrollWorkflowTests.test_unauthorized_approval_attempt_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_10000_minus_1000_minus_500_and_run_reconciliation",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_approval_adapter_preserves_component_and_totals",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_cancel_preserves_component_and_existing_status_semantics",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_correction_direct_edit_rejected_detail_and_ledger_unchanged",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_correction_existing_value_reads_and_serialization",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_correction_omitted_or_null_penalty_does_not_block_unrelated_update",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_correction_restriction_is_clear_for_terminal_runs_too",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_create_helper_persists_supplied_component",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_decimal_rounding_and_preserved_null_read",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_duplicate_process_does_not_overwrite_component",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_existing_correction_no_copy_or_automatic_penalty_delta",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_existing_deductions_and_adjustments_included_once",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_migration_null_zero_rows_and_recovery_limit",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_migration_stops_for_nonzero_finalized_or_correction_values",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_migration_updates_formulas_and_run_totals_without_recreating_column",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_negative_value_rejected_without_mutation",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_no_penalties_tables_are_required",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_one_time_and_final_settlement_compatible_reads_and_totals",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_org_and_auth_enforcement_unchanged",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyPostgresTests.test_public_monthly_crud_omission_null_and_zero",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyUnitTests.test_adjustment_mapping_remains_independent",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyUnitTests.test_decimal_request_and_no_process_input_expansion",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyUnitTests.test_null_omitted_and_decimal_arithmetic",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyUnitTests.test_openapi_request_and_open_detail_response_schemas",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_02_hr_payroll.logic.test_payroll_penalty_deduction.PayrollPenaltyUnitTests.test_python_deduction_and_net_include_penalty_once",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_absent",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_alias",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_complete_dto",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_create_execution_retains_pointer",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_create_persisted_attachment",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_foreign_record",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_list_unchanged",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_org_assertion",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_organization_context",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_same_filename_persisted",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_unauthenticated",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_update_execution_retains_pointer",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ap_update_persisted_attachment",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_absent",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_alias",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_complete_dto",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_create_execution_retains_pointer",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_create_persisted_attachment",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_foreign_record",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_list_unchanged",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_org_assertion",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_organization_context",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_same_filename_persisted",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_unauthenticated",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_update_execution_retains_pointer",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_ar_update_persisted_attachment",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_absent",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_cardinality",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_complete_dto",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_create_execution_retains_pointer",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_create_persisted_attachment",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_foreign_record",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_list_unchanged",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_organization_context",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_positive_id",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_same_filename_persisted",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_unauthenticated",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_update_execution_retains_pointer",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_contract_update_persisted_attachment",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_fleet_absent",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_fleet_cardinality",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_fleet_complete_dto",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_fleet_foreign_record",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_fleet_list_unchanged",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_fleet_organization_context",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_fleet_positive_id",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_fleet_unauthenticated",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_idempotent_replay_keeps_original_attachment",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_payroll_adjustment_flags_and_positive_magnitudes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_payroll_correction_mixed_payable_and_recovery",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_payroll_correction_positive_and_zero_adjustments",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_payroll_final_settlement_entered_adjustments_only",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_payroll_noncorrection_deduction_shortfall_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_payroll_one_time_adjustments_included_once",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_payroll_zero_values_all_off_cycle_types",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_rejected_workflow_remains_unavailable_after_cleanup",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_approval_review_postgres.ApprovalReviewPostgresTests.test_workflow_visibility_real_sql",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_firebase_current_pointer_corrections.FirebaseCurrentPointerCorrectionTests.test_create_operations_ignore_public_current_path_fields",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_firebase_current_pointer_corrections.FirebaseCurrentPointerCorrectionTests.test_downloads_resolve_current_database_pointer",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_firebase_current_pointer_corrections.FirebaseCurrentPointerCorrectionTests.test_failed_pointer_update_deletes_only_new_uncommitted_blob",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_firebase_current_pointer_corrections.FirebaseCurrentPointerCorrectionTests.test_normal_crud_updates_ignore_stale_path_fields",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_firebase_current_pointer_corrections.FirebaseCurrentPointerCorrectionTests.test_ordinary_updates_cannot_revert_pointer_committed_during_inflight_update",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_firebase_current_pointer_corrections.FirebaseCurrentPointerCorrectionTests.test_standalone_uploads_use_unique_paths_and_keep_previous_objects",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_firebase_current_pointer_corrections.FirebaseCurrentPointerCorrectionTests.test_trusted_workflow_replay_promotes_staged_paths_for_contract_ap_ar",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_firebase_current_pointer_corrections.FirebaseCurrentPointerCorrectionTests.test_upload_not_found_returns_before_firebase_upload",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_firebase_current_pointer_corrections.FirebaseCurrentPointerCorrectionTests.test_versioned_blob_path_generation_and_storage_folder_hardening",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_api.WorkflowAdminApiTests.test_catalog_rejects_user_without_workflow_admin",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_api.WorkflowAdminApiTests.test_catalog_requires_token",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_api.WorkflowAdminApiTests.test_catalog_returns_all_six_authoritative_workflows",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_api.WorkflowAdminApiTests.test_cross_organization_admin_access_is_denied",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_api.WorkflowAdminApiTests.test_required_workflow_engine_routes_are_registered",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_api.WorkflowAdminApiTests.test_service_specific_approval_models_accept_configured_instance_and_step_ids",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_corrections.WorkflowAdminCorrectionTests.test_consolidated_workflow_engine_routes_are_not_duplicated",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_corrections.WorkflowAdminCorrectionTests.test_definition_retrieval_maps_workflow_action_to_applies_to_action",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_corrections.WorkflowAdminCorrectionTests.test_payroll_approval_action_maps_to_applies_to_action",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_corrections.WorkflowAdminCorrectionTests.test_publish_maps_workflow_action_to_applies_to_action",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_corrections.WorkflowAdminCorrectionTests.test_publish_version_id_is_only_an_assertion",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_corrections.WorkflowAdminCorrectionTests.test_publish_without_version_id_resolves_current_scoped_draft",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_corrections.WorkflowAdminCorrectionTests.test_save_draft_maps_workflow_action_to_applies_to_action",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_corrections.WorkflowAdminCorrectionTests.test_schema_readiness_check_performs_no_ddl",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_corrections.WorkflowAdminCorrectionTests.test_success_response_has_single_outer_success_envelope",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_corrections.WorkflowAdminCorrectionTests.test_validate_request_rejects_one_sided_graph_payloads",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_admin_corrections.WorkflowAdminCorrectionTests.test_version_list_maps_workflow_action_to_applies_to_action_filter",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_actual_sdk_signs_generation_and_five_minutes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_ap_create_exact_proposed_bytes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_ap_same_filename_different_bytes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_ap_update_exact_proposed_bytes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_ar_create_exact_proposed_bytes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_ar_same_filename_different_bytes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_ar_update_exact_proposed_bytes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_contract_create_exact_proposed_bytes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_contract_same_filename_different_bytes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_contract_update_exact_proposed_bytes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_forged_integrity_metadata",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_forged_provenance",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_gcs_metadata_tampering",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_http_auth_visibility_download_and_no_store",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_legacy_requests_fail_closed_with_stable_discovery",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_metadata_override_is_ignored_and_stripped",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_missing_object",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_missing_original_generation_never_returns_latest",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_no_attachment",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_overwritten_name_keeps_original_generation",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_safe_discovery_no_storage_references",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_signing_precondition_failure_is_integrity_error",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_storage_errors_are_controlled",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_terminal_states",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_unsupported_domain_and_action",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_upload_metadata_failure_cleans_only_uploaded_generation",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_wrong_attachment",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_wrong_version",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_attachment_download.WorkflowAttachmentTests.test_wrong_workflow_attachment",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_document_cleanup.WorkflowDocumentCleanupTests.test_cancelled_staged_document_is_deleted",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_document_cleanup.WorkflowDocumentCleanupTests.test_executed_or_promoted_document_is_not_deleted",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_document_cleanup.WorkflowDocumentCleanupTests.test_missing_staged_document_cleanup_is_idempotent",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_document_cleanup.WorkflowDocumentCleanupTests.test_rejected_staged_document_is_deleted",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_adapters_do_not_accept_client_internal_flags",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_all_is_not_valid_runtime_action",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_catalog_registers_required_workflows",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_clean_workflow_payload_removes_ephemeral_file_fields",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_domain_reference_uses_second_advisory_lock",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_domain_reference_without_explicit_key_is_conflict_not_replay",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_exact_requester_route_takes_precedence_over_wildcard",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_explicit_idempotency_replay_is_scoped_to_requester",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_explicit_self_approval_requires_policy_flag",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_fleet_rejects_unsupported_actions",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_legacy_table_allowlist_rejects_dynamic_table_names",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_missing_requester_route_fails_closed",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_next_approver_uses_route_snapshot",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_no_domain_reference_skips_second_advisory_lock",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_no_line_manager_override_in_route_resolution",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_rejects_ambiguous_route",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_resolve_sequential_route_for_requester",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_runtime_rejects_unsupported_edge_metadata",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_start_workflow_locks_domain_before_conflict_search",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_strip_internal_workflow_flags",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_submit_helper_rejects_authenticated_principal_mismatch",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_trusted_execution_context_is_server_scoped",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_trusted_execution_short_circuits_before_schema_verification",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_update_delete_idempotency_identity_uses_domain_reference",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_validation_allows_single_wildcard_requester",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_validation_rejects_branching",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_validation_rejects_disconnected_approver",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_validation_rejects_duplicate_requester_identity",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_validation_rejects_multiple_wildcard_requesters",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_validation_rejects_unsupported_edge_shape",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_validation_rejects_wildcard_requester_self_approval_risk",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_wildcard_requester_route_is_used_when_exact_requester_absent",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_engine_core.WorkflowEngineCoreTests.test_workflow_adapter_scopes_configured_approval_to_authenticated_org",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.ConsolidatedCorsErrorTests.test_allowed_origin_receives_cors_on_controlled_and_unhandled_500",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.ConsolidatedCorsErrorTests.test_cors_middleware_wraps_controlled_error_middleware",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeApiTests.test_inbox_detail_and_steps_runtime_endpoints_still_return_controlled_results",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeApiTests.test_instances_endpoint_base_request_returns_200",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeApiTests.test_invalid_date_syntax_returns_422_before_runtime_query",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeApiTests.test_organization_mismatch_returns_403",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeApiTests.test_runtime_query_failure_returns_stable_error_envelope",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeDetailAndStepsTests.test_instance_detail_retains_visibility_and_current_node_join",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeDetailAndStepsTests.test_steps_are_ordered_and_inaccessible_instances_return_none",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_admin_visibility_is_organization_wide_only",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_base_request_omits_nullable_optional_predicates",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_current_approver_join_is_bound_to_current_node",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_date_from_and_date_to_form_half_open_calendar_range",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_date_from_only_uses_inclusive_lower_boundary",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_date_to_only_uses_exclusive_next_day_boundary",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_empty_result_returns_empty_list",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_non_admin_visibility_keeps_requester_assigned_and_historical_rules",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_requester_filter_is_case_insensitive",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_same_day_range_includes_full_calendar_date",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_workflow_action_filter",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_workflow_code_filter",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_runtime_instances.WorkflowRuntimeInstanceQueryTests.test_workflow_status_filter",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_safe_document_api.WorkflowSafeDocumentApiTests.test_contract_multipart_create_and_update_dispatch_to_workflow_logic_with_file",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_safe_document_api.WorkflowSafeDocumentApiTests.test_financial_multipart_create_and_update_dispatch_to_workflow_logic_with_file",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_safe_document_api.WorkflowSafeDocumentApiTests.test_multipart_business_endpoints_accept_optional_file",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_safe_document_api.WorkflowSafeDocumentApiTests.test_openapi_exposes_multipart_business_document_routes_and_keeps_existing_routes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_adapter_helper_imports_repository_allowlist",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_approve_workflow_step_accepts_trusted_actor",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_configured_instance_requires_supplied_step_id",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_configured_rejection_cleans_staged_document",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_explicit_sql_migration_contains_legacy_compatibility_indexes",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_final_execution_adapter_receives_workflow_transaction_connection",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_legacy_record_without_instance_returns_not_configured",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_legacy_table_allowlist_uses_stable_error_code",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_missing_workflow_schema_returns_migration_required",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_payload_identity_cannot_override_trusted_actor",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_reject_workflow_step_accepts_trusted_actor",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_request_id_only_configured_instance_requires_step_identity",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_start_workflow_uses_caller_owned_connection",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_start_workflow_without_connection_owns_engine_lifecycle",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_supplied_request_and_instance_ids_must_refer_to_same_transaction",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_supplied_step_id_must_match_current_pending_step",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_terminal_response_reports_state_without_api_error_marker",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_true_missing_request_returns_not_found",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_shared_compatibility.WorkflowSharedCompatibilityTests.test_wrong_workflow_instance_domain_fails_closed_before_step_action",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_ap_create_update_delete_pending_returns_success_contract",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_ap_document_is_staged_before_pending_update_workflow",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_ap_staged_document_is_cleaned_when_workflow_submission_fails",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_ar_create_update_delete_pending_returns_success_contract",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_ar_document_is_staged_before_pending_update_workflow",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_ar_staged_document_is_cleaned_when_workflow_submission_fails",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_asset_create_update_delete_pending_returns_success_contract",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_contract_create_update_pending_returns_success_contract",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_contract_document_is_staged_before_pending_workflow",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_contract_local_path_without_stream_is_rejected_before_workflow",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_contract_staged_document_is_cleaned_when_workflow_submission_fails",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_contract_update_document_uses_staging_path_not_approved_path",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_fleet_create_update_delete_pending_returns_success_contract",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_standalone_ar_document_upload_does_not_route_through_update_workflow",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_07_alerts_wf_engine.tests.test_workflow_transaction_pending_responses.WorkflowTransactionPendingResponseTests.test_uploaders_support_stream_staging_contract_without_pure_staging_db_engine",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.api.test_authentication_api.AuthenticationApiTest.test_health_openapi_and_full_authentication_flow",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.api.test_authentication_api.AuthenticationApiTest.test_invalid_login_uses_401",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.api.test_authentication_api.AuthenticationApiTest.test_missing_bearer_token_uses_401",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_bearer_prefix_is_accepted",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_current_role_and_license_values_are_returned",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_current_user_organization_mismatch_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_deleted_user_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_disabled_user_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_expired_access_token_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_invalid_signature_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_license_changed_after_login_is_reflected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_missing_authentication_sessions_table_returns_development_error",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_missing_required_claim_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_missing_session_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_password_hash_and_token_hash_fields_never_appear",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_refresh_token_type_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_revoked_session_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_role_changed_after_login_is_reflected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_session_organization_mismatch_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_tampered_token_is_rejected",
+        "status": "PASS"
+      },
+      {
+        "test": "app_backend.services.service_09_user_authentication.logic.test_authentication_me_logic.AuthenticationMeLogicTest.test_valid_access_token_returns_current_authenticated_user",
+        "status": "PASS"
+      },
+      {
+        "test": "test_adjustment_aggregation",
+        "status": "PASS"
+      },
+      {
+        "test": "test_monthly_employee_snapshot_copies_fixed_salary",
+        "status": "PASS"
+      },
+      {
+        "test": "test_off_cycle_employee_snapshot_keeps_fixed_salary_zero",
+        "status": "PASS"
+      }
+    ]
+  },
+  "scope_checks": {
+    "registered_paths": 171,
+    "penalties_paths_and_schemas_unchanged": true,
+    "unchanged_protected_functions": [
+      "update_payroll_adjustment",
+      "aggregate_adjustments_by_type",
+      "map_adjustments_to_payroll_detail",
+      "_prepare_correction_recovery",
+      "_allocate_correction_recovery",
+      "_insert_correction_recovery_entries",
+      "_resolve_correction_source_detail"
+    ]
+  },
+  "limitations": [
+    "Migration prepared and locally tested; not applied to Railway.",
+    "No application deployment performed.",
+    "CORRECTION direct penalty edits rejected by explicit user decision.",
+    "No dedicated backend register/export implementation exists.",
+    "Production-backed live scripts were not run."
+  ],
+  "source_audit": {
+    "matched_lines": 510,
+    "files": 19,
+    "classification_counts": {
+      "Not impacted": 297,
+      "Updated": 213
+    }
+  },
+  "test_cleanup": {
+    "random_test_databases_remaining": 0,
+    "isolated_test_server_stopped": true
+  }
+}
