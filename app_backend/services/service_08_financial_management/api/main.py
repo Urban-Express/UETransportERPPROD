@@ -64,6 +64,7 @@ from app_backend.services.service_08_financial_management.logic.accounts_receiva
 )
 from app_backend.services.service_08_financial_management.logic.accounts_receivables_update_data import (
     update_accounts_receivable,
+    update_ar_collection_status,
 )
 from app_backend.services.service_08_financial_management.logic.accounts_receivables_delete_data import (
     delete_accounts_receivable,
@@ -323,6 +324,15 @@ class AccountsReceivableUpdatePayload(AccountsReceivablePayload):
     ar_id: Optional[int] = None
     ar_id_pk: Optional[int] = None
     ar_expected_revision: Optional[int] = Field(default=None, ge=0)
+
+
+class AccountsReceivableCollectionStatusPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    ar_id_pk: int = Field(gt=0)
+    ar_org_id_fk: int = Field(gt=0)
+    ar_collection_status: Literal["OUTSTANDING", "PARTIALLY_RECEIVED", "RECEIVED"]
+    ar_expected_revision: int = Field(ge=0)
 
 
 class AccountsReceivableDeletePayload(BaseModel):
@@ -948,6 +958,22 @@ def update_accounts_receivable_endpoint(
             set_updated_by=True,
         ),
     )
+
+
+@app.post("/api/v1/accounts-receivables/collection-status/update", tags=["Accounts Receivable"])
+def update_ar_collection_status_endpoint(
+    payload: AccountsReceivableCollectionStatusPayload,
+    auth_context: dict[str, Any] = Security(get_authenticated_context),
+) -> Any:
+    result = update_ar_collection_status(
+        bind_ar_payload(payload, auth_context, set_updated_by=True)
+    )
+    if result.get("error"):
+        return JSONResponse(
+            status_code=result["status_code"],
+            content={"success": False, "error": result["error"], "error_code": result["error_code"]},
+        )
+    return success_response(_to_json_safe(result))
 
 
 @app.post("/api/v1/accounts-receivables/update-with-document", tags=["Accounts Receivable"])

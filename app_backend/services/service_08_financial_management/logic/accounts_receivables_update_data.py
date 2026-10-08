@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy import text
 
 from app_backend.services.service_01_organization_management.data.db_connect_engine import db_engine
@@ -9,6 +11,7 @@ from app_backend.services.service_07_alerts_wf_engine.accounts_receivables_wf im
     is_accounts_receivables_workflow_approved,
 )
 from app_backend.services.service_07_alerts_wf_engine.workflow_adapter_helpers import (
+    _legacy_payload_org_predicate,
     is_pending_workflow_submission,
     pending_workflow_submission_response,
 )
@@ -18,10 +21,15 @@ from app_backend.services.service_07_alerts_wf_engine.workflow_document_cleanup 
 from app_backend.services.service_07_alerts_wf_engine.workflow_security import (
     is_trusted_workflow_execution,
 )
+from app_backend.services.service_07_alerts_wf_engine.workflow_runtime_engine import (
+    _find_pending_domain_conflict,
+    _lock_pending_domain_conflict,
+)
 from app_backend.services.service_08_financial_management.logic.accounts_receivables_create_data import (
     stage_ar_invoice_document_for_workflow,
 )
 from app_backend.services.service_08_financial_management.logic.accounts_receivables_common import (
+    AR_COLLECTION_STATUSES,
     duplicate_ar_invoice_exists,
     get_ar_by_id,
     get_ar_id_from_payload,
@@ -30,6 +38,171 @@ from app_backend.services.service_08_financial_management.logic.accounts_receiva
     verify_ar_organization_exists,
     verify_customer_for_organization,
 )
+
+
+def _ar_collection_status_license_error(conn, organization_id):
+    """Require at least one organization license and every finance flag TRUE."""
+    licenses = conn.execute(text("""
+        SELECT financial_management_module
+        FROM organization_license_master
+        WHERE org_id_fk = :organization_id
+    """), {"organization_id": organization_id}).mappings().all()
+    if licenses and all(row["financial_management_module"] is True for row in licenses):
+        return None
+    if any(row["financial_management_module"] is True for row in licenses):
+        return {
+            "error": "Conflicting financial_management_module license records for the authenticated organization.",
+            "error_code": "AR_MODULE_LICENSE_AMBIGUOUS",
+            "status_code": 403,
+        }
+    return {
+        "error": (
+            "financial_management_module must be enabled on every license record "
+            "and at least one license record must exist for the authenticated organization."
+        ),
+        "error_code": "AR_MODULE_LICENSE_REQUIRED",
+        "status_code": 403,
+    }
+
+
+def update_ar_collection_status(payload: dict, conn=None):
+    """Update status only, using identity bound by the authenticated API.
+
+    A supplied connection participates in its caller's transaction using a
+    savepoint; otherwise this operation owns and commits its transaction.
+    Module access requires one or more organization licenses, all finance-enabled.
+    """
+    allowed_fields = {
+        "ar_id_pk", "ar_org_id_fk", "ar_collection_status", "ar_expected_revision",
+        "authenticated_org_id", "authenticated_user_id",
+        "authenticated_user_principal_name", "user_principal_name", "updated_by",
+    }
+    if not isinstance(payload, dict) or set(payload) - allowed_fields:
+        return {"error": "Invalid Collection Status request fields.", "error_code": "AR_INVALID_COLLECTION_STATUS_REQUEST", "status_code": 422}
+    ar_id = payload.get("ar_id_pk")
+    if type(ar_id) is not int or ar_id <= 0:
+        return {"error": "ar_id_pk must be a positive integer.", "error_code": "AR_INVALID_INVOICE_ID", "status_code": 422}
+    org_id = payload.get("authenticated_org_id")
+    user_id = payload.get("authenticated_user_id")
+    principal = payload.get("authenticated_user_principal_name")
+    if (type(org_id) is not int or org_id <= 0 or type(user_id) is not int or user_id <= 0
+            or not isinstance(principal, str) or not principal.strip()):
+        return {"error": "Authenticated user and organization context is required.", "error_code": "AR_AUTHENTICATION_REQUIRED", "status_code": 401}
+    if type(payload.get("ar_org_id_fk")) is not int or payload["ar_org_id_fk"] != org_id:
+        return {"error": "ar_org_id_fk does not match the authenticated organization.", "error_code": "AR_ORGANIZATION_MISMATCH", "status_code": 403}
+    principal = principal.strip()
+
+    def execute_update(connection):
+        # The existing permission view supplies role-based grants. Exclude
+        # inactive roles, as authentication's role-context lookup does.
+        permitted = connection.execute(text("""
+            SELECT 1
+            FROM v_user_access_rights rights
+            JOIN user_master usr
+              ON lower(usr.user_principal_name) = lower(rights.user_principal_name)
+            JOIN role_master role ON role.role_name = rights.role_name
+            JOIN organization_master org ON org.org_id_pk = usr.user_org_id_fk
+            WHERE usr.user_id_pk = :user_id
+              AND lower(usr.user_principal_name) = lower(:principal)
+              AND usr.user_org_id_fk = :org_id
+              AND coalesce(usr.is_active, true) = true
+              AND coalesce(usr.is_deleted, false) = false
+              AND coalesce(role.is_active, true) = true
+              AND upper(rights.module_name) = 'FINANCE'
+              AND upper(rights.action_name) = 'UPDATE'
+              AND upper(rights.permission_code) = 'FIN_UPDATE'
+            LIMIT 1
+        """), {"user_id": user_id, "principal": principal, "org_id": org_id}).first()
+        if not permitted:
+            return {"error": "FIN_UPDATE permission is required for the authenticated organization.", "error_code": "AR_UPDATE_PERMISSION_REQUIRED", "status_code": 403}
+
+        license_error = _ar_collection_status_license_error(connection, org_id)
+        if license_error is not None:
+            return license_error
+
+        status = payload.get("ar_collection_status")
+        if not isinstance(status, str) or status not in AR_COLLECTION_STATUSES:
+            return {"error": "Invalid ar_collection_status.", "error_code": "AR_INVALID_COLLECTION_STATUS", "status_code": 422}
+        revision = payload.get("ar_expected_revision")
+        if type(revision) is not int or revision < 0:
+            return {"error": "ar_expected_revision must be a nonnegative integer.", "error_code": "AR_INVALID_REVISION", "status_code": 422}
+
+        # Serialize with existing UPDATE submissions. Lock workflow records
+        # before the invoice, matching approval execution's lock order.
+        identity = {"domain_reference_id": ar_id}
+        _lock_pending_domain_conflict(connection, "ACCOUNTS_RECEIVABLE", "UPDATE", org_id, identity)
+        pending = _find_pending_domain_conflict(connection, "ACCOUNTS_RECEIVABLE", "UPDATE", org_id, identity)
+        if not pending:
+            # The runtime lookup covers configured instances. Also protect
+            # older unlinked requests still executable by the legacy adapter.
+            org_predicate = _legacy_payload_org_predicate(("ar_org_id_fk",))
+            pending = connection.execute(text(f"""
+                SELECT legacy.workflow_request_id_pk
+                FROM accounts_receivables_workflow_requests legacy
+                WHERE legacy.workflow_instance_id_fk IS NULL
+                  AND legacy.workflow_action = 'UPDATE'
+                  AND legacy.workflow_status = 'PENDING_APPROVAL'
+                  AND {org_predicate}
+                  AND (legacy.request_payload ->> 'ar_id' = :ar_id_text
+                       OR legacy.request_payload ->> 'ar_id_pk' = :ar_id_text)
+                ORDER BY legacy.workflow_request_id_pk
+                LIMIT 1
+                FOR UPDATE
+            """), {"organization_id": org_id, "ar_id_text": str(ar_id)}).first()
+
+        current = connection.execute(text("""
+            SELECT ar_id_pk, ar_collection_status, coalesce(ar_revision, 0) AS ar_revision
+            FROM accounts_receivables
+            WHERE ar_id_pk = :ar_id AND ar_org_id_fk = :org_id
+            FOR UPDATE
+        """), {"ar_id": ar_id, "org_id": org_id}).mappings().one_or_none()
+        if current is None:
+            return {"error": "AR invoice ID not found for the authenticated organization.", "error_code": "AR_INVOICE_NOT_FOUND", "status_code": 404}
+        if current["ar_revision"] != revision:
+            return {"error": "AR_STALE_INVOICE: reload the current invoice before updating.", "error_code": "AR_STALE_INVOICE", "status_code": 409}
+        if current["ar_collection_status"] == status:
+            return {
+                "message": "Collection Status is unchanged.", "ar_id_pk": ar_id,
+                "ar_collection_status": status, "ar_revision": current["ar_revision"],
+                "workflow_required": False, "business_operation_executed": False,
+                "no_change": True,
+            }
+        if pending:
+            return {
+                "error": "A pending AR UPDATE approval conflicts with this Collection Status change; resolve it and reload the invoice.",
+                "error_code": "AR_PENDING_UPDATE_WORKFLOW", "status_code": 409,
+            }
+
+        # updated_at remains trigger-owned. Never write amounts, approvals,
+        # document pointers, lines, or any other invoice attributes.
+        updated = connection.execute(text("""
+            UPDATE accounts_receivables
+            SET ar_collection_status = :status,
+                updated_by = :principal,
+                ar_revision = coalesce(ar_revision, 0) + 1
+            WHERE ar_id_pk = :ar_id AND ar_org_id_fk = :org_id
+              AND coalesce(ar_revision, 0) = :revision
+            RETURNING ar_id_pk, ar_collection_status, ar_revision
+        """), {"status": status, "principal": principal, "ar_id": ar_id, "org_id": org_id, "revision": revision}).mappings().one()
+        return {
+            "message": "Successfully updated AR Collection Status.",
+            **dict(updated), "workflow_required": False,
+            "business_operation_executed": True, "no_change": False,
+        }
+
+    try:
+        if conn is not None:
+            with conn.begin_nested() if conn.in_transaction() else conn.begin():
+                return execute_update(conn)
+        engine = db_engine()
+        try:
+            with engine.begin() as connection:
+                return execute_update(connection)
+        finally:
+            engine.dispose()
+    except Exception:
+        logging.getLogger(__name__).exception("AR Collection Status update failed.")
+        return {"error": "Failed to update AR Collection Status; the operation was rolled back.", "error_code": "AR_COLLECTION_STATUS_UPDATE_FAILED", "status_code": 500}
 
 
 def update_accounts_receivables(
