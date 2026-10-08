@@ -37,6 +37,24 @@ def contract_line(contract, billing_start, billing_end):
         raise ARValidationError("Invalid billing period: it does not overlap the contract term.")
     basis = contract["cont_revenue_basis"]
     components = []
+    proration_method = "CALENDAR_DAYS"
+    if basis in ("PER_DAY", "PER_KILOMETER"):
+        quantity_field, rate_field, uom = (
+            ("cont_no_of_days", "cont_per_day_rate", "DAY") if basis == "PER_DAY"
+            else ("cont_no_of_kms", "cont_per_km_rate", "KM")
+        )
+        if contract.get(quantity_field) is None:
+            raise ARValidationError(f"Invalid contract: {quantity_field} is required and must be greater than zero.")
+        quantity = decimal_value(contract[quantity_field], quantity_field, scale=4)
+        if quantity <= 0:
+            raise ARValidationError(f"Invalid contract: {quantity_field} must be greater than zero.")
+        if contract.get(rate_field) is None:
+            raise ARValidationError(f"Invalid contract: {rate_field} must not be NULL (zero is allowed).")
+        rate = decimal_value(contract[rate_field], rate_field)
+        components.append((quantity, rate, uom, None))
+        proration_method = None
+    elif basis not in ("PER_BUS", "PER_PASSENGER", "PER_PASSENGER_AND_PER_BUS"):
+        raise ARValidationError(f"Unsupported contract Revenue Basis: {basis}.")
     if basis in ("PER_BUS", "PER_PASSENGER_AND_PER_BUS"):
         for stem, label in (("big_bus", "Bus (>34 seats)"), ("medium_bus", "Bus (17-34 seats)"), ("small_bus", "Bus (<17 seats)")):
             suffix = {"big_bus": "gt_34", "medium_bus": "17_34", "small_bus": "lt_17"}[stem]
@@ -55,15 +73,18 @@ def contract_line(contract, billing_start, billing_end):
     if not components:
         raise ARValidationError("Invalid contract: no supported recurring billing component with a quantity and rate.")
     quantity, rate, uom, vehicle = components[0]
-    return {
+    line = {
         "ar_line_number": 1, "ar_line_source_type": "CONTRACT_AUTOFILL",
         "ar_line_source_contract_id_fk": contract["cont_id_pk"],
         "ar_line_description": contract.get("cont_contract_name") or contract["cont_contract_number"],
         "ar_line_vehicle_description": vehicle, "ar_line_quantity": decimal_value(quantity, "contract quantity", scale=4),
         "ar_line_uom": uom, "ar_line_unit_rate": decimal_value(rate, "contract rate"),
         "ar_line_service_period_start": start, "ar_line_service_period_end": end,
-        "ar_line_proration_method": "CALENDAR_DAYS",
+        "ar_line_proration_method": proration_method,
     }
+    if proration_method is None:
+        line.update(ar_line_proration_numerator=None, ar_line_proration_denominator=None)
+    return line
 
 
 def get_accounts_receivables_contract_prefill(payload):
@@ -89,7 +110,7 @@ def get_accounts_receivables_contract_prefill(payload):
                 "ar_billing_period_start": date_value(payload["ar_billing_period_start"], "ar_billing_period_start"),
                 "ar_billing_period_end": date_value(payload["ar_billing_period_end"], "ar_billing_period_end"), "ar_due_date": None},
             "suggested_line": line, "totals_preview": calculate_totals([line]),
-            "calculation_metadata": {"proration_method": "CALENDAR_DAYS", "numerator": line["ar_line_proration_numerator"],
+            "calculation_metadata": {"proration_method": line["ar_line_proration_method"], "numerator": line["ar_line_proration_numerator"],
                 "denominator": line["ar_line_proration_denominator"], "due_date_source": "MANUAL",
                 "description_completion": "Only structured contract name/number and bus class are supplied; complete route/vehicle wording manually."},
         })
