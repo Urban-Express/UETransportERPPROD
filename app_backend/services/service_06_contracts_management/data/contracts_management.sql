@@ -567,3 +567,12 @@ CREATE INDEX idx_contracts_management_dates
     );
 
 COMMIT;
+
+-- Alterations to contract management table
+select * from contracts_management;
+
+alter table contracts_management
+add column cont_no_of_days numeric(14,2),
+add column cont_per_day_rate numeric(14,2),
+add column cont_no_of_kms numeric(14,2),
+add column cont_per_km_rate numeric(14,2);

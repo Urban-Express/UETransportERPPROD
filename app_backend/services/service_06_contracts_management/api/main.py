@@ -22,7 +22,10 @@ from app_backend.services.service_06_contracts_management.logic.customer_master_
 from app_backend.services.service_06_contracts_management.logic.customer_master_get_data import get_customer_master
 from app_backend.services.service_06_contracts_management.logic.customer_master_update_data import update_customer_master
 from app_backend.services.service_06_contracts_management.logic.customer_master_delete_data import delete_customer_master
-from app_backend.services.service_06_contracts_management.logic.contracts_management_create_data import create_contract
+from app_backend.services.service_06_contracts_management.logic.contracts_management_create_data import (
+    CONTRACT_DAY_KM_FIELDS,
+    create_contract,
+)
 from app_backend.services.service_06_contracts_management.logic.contracts_management_get_data import get_contract, get_contract_by_id
 from app_backend.services.service_06_contracts_management.logic.contracts_management_update_data import update_contract
 from app_backend.services.service_06_contracts_management.logic.contracts_management_delete_data import delete_contract
@@ -144,6 +147,10 @@ class ContractsManagementPayload(BaseModel):
     cont_extra_trip_charge: Optional[float] = 0
     cont_km_cap_pm_per_bus: Optional[float] = None
     cont_extra_km_charge_per_km: Optional[float] = None
+    cont_no_of_days: Optional[float] = None
+    cont_per_day_rate: Optional[float] = None
+    cont_no_of_kms: Optional[float] = None
+    cont_per_km_rate: Optional[float] = None
     total_contract_value: Optional[float] = None
     cont_notes: Optional[str] = None
     cont_link_path: Optional[str] = None
@@ -159,6 +166,10 @@ class ContractsManagementPayload(BaseModel):
 class ContractsManagementUpdatePayload(ContractsManagementPayload):
     cont_id: Optional[int] = None
     cont_id_pk: Optional[int] = None
+
+    def to_update_dict(self) -> dict[str, Any]:
+        # Preserve omission only for these fields; retain existing defaults elsewhere.
+        return self.model_dump(exclude=set(CONTRACT_DAY_KM_FIELDS) - self.model_fields_set)
 
 
 class ContractsManagementDeletePayload(BaseModel):
@@ -439,7 +450,7 @@ def update_contract_endpoint(
     return handle_logic_call(
         update_contract,
         bind_authenticated_payload(
-            payload,
+            payload.to_update_dict(),
             auth_context,
             org_fields=("cont_org_id_fk",),
             principal_fields=("user_principal_name",),
@@ -465,7 +476,7 @@ def update_contract_with_document_endpoint(
     return handle_logic_file_call(
         update_contract,
         bind_authenticated_payload(
-            payload,
+            payload.to_update_dict(),
             auth_context,
             org_fields=("cont_org_id_fk",),
             principal_fields=("user_principal_name",),

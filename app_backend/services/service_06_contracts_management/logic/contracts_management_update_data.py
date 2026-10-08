@@ -7,6 +7,7 @@ from app_backend.services.firebase_file_pointer_helpers import (
     strip_untrusted_file_pointer_fields,
 )
 from app_backend.services.service_06_contracts_management.logic.contracts_management_create_data import (
+    CONTRACT_DAY_KM_FIELDS,
     contract_number_exists,
     get_contract_insert_params,
     stage_contract_document_for_workflow,
@@ -143,6 +144,12 @@ def update_contracts_management(
             if update_document_pointer
             else ""
         )
+        # Omitted fields remain untouched at execution; explicit None clears them.
+        day_km_set_clause = "".join(
+            f"                {field} = :{field},\n"
+            for field in CONTRACT_DAY_KM_FIELDS
+            if field in payload
+        )
 
         update_contracts_management_query = text(f"""
             update contracts_management
@@ -177,6 +184,7 @@ def update_contracts_management(
                 cont_extra_trip_charge = :cont_extra_trip_charge,
                 cont_km_cap_pm_per_bus = :cont_km_cap_pm_per_bus,
                 cont_extra_km_charge_per_km = :cont_extra_km_charge_per_km,
+{day_km_set_clause}\
                 total_contract_value = :total_contract_value,
                 cont_notes = :cont_notes,
 {document_pointer_set_clause}\

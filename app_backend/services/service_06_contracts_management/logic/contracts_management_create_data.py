@@ -29,6 +29,12 @@ from app_backend.services.service_07_alerts_wf_engine.workflow_security import (
 
 
 CONTRACT_EPHEMERAL_DOCUMENT_FIELDS = ("file_path", "contract_file_path")
+CONTRACT_DAY_KM_FIELDS = (
+    "cont_no_of_days",
+    "cont_per_day_rate",
+    "cont_no_of_kms",
+    "cont_per_km_rate",
+)
 
 
 def get_contract_insert_params(payload: dict):
@@ -81,6 +87,10 @@ def get_contract_insert_params(payload: dict):
         "cont_extra_trip_charge": payload.get("cont_extra_trip_charge", 0),
         "cont_km_cap_pm_per_bus": payload.get("cont_km_cap_pm_per_bus"),
         "cont_extra_km_charge_per_km": payload.get("cont_extra_km_charge_per_km"),
+        "cont_no_of_days": payload.get("cont_no_of_days"),
+        "cont_per_day_rate": payload.get("cont_per_day_rate"),
+        "cont_no_of_kms": payload.get("cont_no_of_kms"),
+        "cont_per_km_rate": payload.get("cont_per_km_rate"),
         "total_contract_value": payload.get("total_contract_value"),
         "cont_notes": payload.get("cont_notes"),
         "cont_link_path": payload.get("cont_link_path"),
@@ -336,6 +346,10 @@ def create_contracts_management(
                 cont_extra_trip_charge,
                 cont_km_cap_pm_per_bus,
                 cont_extra_km_charge_per_km,
+                cont_no_of_days,
+                cont_per_day_rate,
+                cont_no_of_kms,
+                cont_per_km_rate,
                 total_contract_value,
                 cont_notes,
                 cont_link_path,
@@ -373,6 +387,10 @@ def create_contracts_management(
                 :cont_extra_trip_charge,
                 :cont_km_cap_pm_per_bus,
                 :cont_extra_km_charge_per_km,
+                :cont_no_of_days,
+                :cont_per_day_rate,
+                :cont_no_of_kms,
+                :cont_per_km_rate,
                 :total_contract_value,
                 :cont_notes,
                 :cont_link_path,
