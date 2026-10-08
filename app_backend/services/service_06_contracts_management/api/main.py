@@ -10,7 +10,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -57,12 +57,42 @@ class CustomerMasterPayload(BaseModel):
     cust_name: str
     cust_category: str
     cust_status: Optional[str] = "ACTIVE"
-    cust_contact_person_name: Optional[str] = None
-    cust_contact_person_designation: Optional[str] = None
-    cust_phone_primary: Optional[str] = None
-    cust_phone_secondary: Optional[str] = None
-    cust_email_primary: Optional[str] = None
-    cust_email_secondary: Optional[str] = None
+    portal_system: Optional[str] = Field(default=None, max_length=100)
+    procurement_head_name: Optional[str] = Field(default=None, max_length=150)
+    procurement_head_phone_primary: Optional[str] = Field(default=None, max_length=30)
+    procurement_head_phone_secondary: Optional[str] = Field(default=None, max_length=30)
+    procurement_head_email_primary: Optional[str] = Field(default=None, max_length=254)
+    procurement_head_email_secondary: Optional[str] = Field(default=None, max_length=254)
+    operation_incharge_name: Optional[str] = Field(default=None, max_length=150)
+    operation_incharge_phone_primary: Optional[str] = Field(default=None, max_length=30)
+    operation_incharge_phone_secondary: Optional[str] = Field(default=None, max_length=30)
+    operation_incharge_email_primary: Optional[str] = Field(default=None, max_length=254)
+    operation_incharge_email_secondary: Optional[str] = Field(default=None, max_length=254)
+    operation_head_name: Optional[str] = Field(default=None, max_length=150)
+    operation_head_phone_primary: Optional[str] = Field(default=None, max_length=30)
+    operation_head_phone_secondary: Optional[str] = Field(default=None, max_length=30)
+    operation_head_email_primary: Optional[str] = Field(default=None, max_length=254)
+    operation_head_email_secondary: Optional[str] = Field(default=None, max_length=254)
+    finance_incharge_name: Optional[str] = Field(default=None, max_length=150)
+    finance_incharge_phone_primary: Optional[str] = Field(default=None, max_length=30)
+    finance_incharge_phone_secondary: Optional[str] = Field(default=None, max_length=30)
+    finance_incharge_email_primary: Optional[str] = Field(default=None, max_length=254)
+    finance_incharge_email_secondary: Optional[str] = Field(default=None, max_length=254)
+    finance_head_name: Optional[str] = Field(default=None, max_length=150)
+    finance_head_phone_primary: Optional[str] = Field(default=None, max_length=30)
+    finance_head_phone_secondary: Optional[str] = Field(default=None, max_length=30)
+    finance_head_email_primary: Optional[str] = Field(default=None, max_length=254)
+    finance_head_email_secondary: Optional[str] = Field(default=None, max_length=254)
+    wcr_incharge_name: Optional[str] = Field(default=None, max_length=150)
+    wcr_incharge_phone_primary: Optional[str] = Field(default=None, max_length=30)
+    wcr_incharge_phone_secondary: Optional[str] = Field(default=None, max_length=30)
+    wcr_incharge_email_primary: Optional[str] = Field(default=None, max_length=254)
+    wcr_incharge_email_secondary: Optional[str] = Field(default=None, max_length=254)
+    grn_incharge_name: Optional[str] = Field(default=None, max_length=150)
+    grn_incharge_phone_primary: Optional[str] = Field(default=None, max_length=30)
+    grn_incharge_phone_secondary: Optional[str] = Field(default=None, max_length=30)
+    grn_incharge_email_primary: Optional[str] = Field(default=None, max_length=254)
+    grn_incharge_email_secondary: Optional[str] = Field(default=None, max_length=254)
     cust_billing_address: Optional[str] = None
     cust_service_address: Optional[str] = None
     cust_tax_registration_number: Optional[str] = None

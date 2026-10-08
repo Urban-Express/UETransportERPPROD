@@ -80,3 +80,97 @@ CREATE INDEX idx_customer_master_category
     ON public.customer_master (cust_org_id_fk, cust_category);
 
 COMMIT;
+
+-- NEW TABLE STRUCTURE SCRIPT
+BEGIN;
+
+-- ============================================================
+-- STEP 1: Rename existing Customer contact fields
+-- Existing data in these columns is preserved automatically.
+-- ============================================================
+
+ALTER TABLE customer_master
+RENAME COLUMN cust_contact_person_name
+TO procurement_head_name;
+
+ALTER TABLE customer_master
+RENAME COLUMN cust_phone_primary
+TO procurement_head_phone_primary;
+
+ALTER TABLE customer_master
+RENAME COLUMN cust_phone_secondary
+TO procurement_head_phone_secondary;
+
+ALTER TABLE customer_master
+RENAME COLUMN cust_email_primary
+TO procurement_head_email_primary;
+
+ALTER TABLE customer_master
+RENAME COLUMN cust_email_secondary
+TO procurement_head_email_secondary;
+
+
+-- ============================================================
+-- STEP 2: Drop obsolete field and add new fields
+-- ============================================================
+
+ALTER TABLE customer_master
+
+DROP COLUMN cust_contact_person_designation,
+
+ADD COLUMN portal_system varchar(100),
+
+ADD COLUMN operation_incharge_name varchar(150),
+ADD COLUMN operation_incharge_phone_primary varchar(30),
+ADD COLUMN operation_incharge_phone_secondary varchar(30),
+ADD COLUMN operation_incharge_email_primary varchar(254),
+ADD COLUMN operation_incharge_email_secondary varchar(254),
+
+ADD COLUMN operation_head_name varchar(150),
+ADD COLUMN operation_head_phone_primary varchar(30),
+ADD COLUMN operation_head_phone_secondary varchar(30),
+ADD COLUMN operation_head_email_primary varchar(254),
+ADD COLUMN operation_head_email_secondary varchar(254),
+
+ADD COLUMN finance_incharge_name varchar(150),
+ADD COLUMN finance_incharge_phone_primary varchar(30),
+ADD COLUMN finance_incharge_phone_secondary varchar(30),
+ADD COLUMN finance_incharge_email_primary varchar(254),
+ADD COLUMN finance_incharge_email_secondary varchar(254),
+
+ADD COLUMN finance_head_name varchar(150),
+ADD COLUMN finance_head_phone_primary varchar(30),
+ADD COLUMN finance_head_phone_secondary varchar(30),
+ADD COLUMN finance_head_email_primary varchar(254),
+ADD COLUMN finance_head_email_secondary varchar(254),
+
+ADD COLUMN wcr_incharge_name varchar(150),
+ADD COLUMN wcr_incharge_phone_primary varchar(30),
+ADD COLUMN wcr_incharge_phone_secondary varchar(30),
+ADD COLUMN wcr_incharge_email_primary varchar(254),
+ADD COLUMN wcr_incharge_email_secondary varchar(254),
+
+ADD COLUMN grn_incharge_name varchar(150),
+ADD COLUMN grn_incharge_phone_primary varchar(30),
+ADD COLUMN grn_incharge_phone_secondary varchar(30),
+ADD COLUMN grn_incharge_email_primary varchar(254),
+ADD COLUMN grn_incharge_email_secondary varchar(254);
+
+
+-- ============================================================
+-- STEP 3: Explicitly enforce the intended datatypes/lengths
+-- on the five renamed columns.
+--
+-- This is technically unnecessary if their existing datatypes
+-- already match these definitions, but guarantees the final
+-- structure matches your intended schema.
+-- ============================================================
+
+ALTER TABLE customer_master
+ALTER COLUMN procurement_head_name TYPE varchar(150),
+ALTER COLUMN procurement_head_phone_primary TYPE varchar(30),
+ALTER COLUMN procurement_head_phone_secondary TYPE varchar(30),
+ALTER COLUMN procurement_head_email_primary TYPE varchar(254),
+ALTER COLUMN procurement_head_email_secondary TYPE varchar(254);
+
+COMMIT;

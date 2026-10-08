@@ -17,7 +17,9 @@ def print_runtime(program_name, start_time):
 
 
 def get_created_cust_id(cust_code):
-    df_customer_master, json_customer_master = get_customer_master()
+    df_customer_master, json_customer_master = get_customer_master(
+        {"cust_org_id_fk": TEST_ORG_ID}
+    )
     print(f"customer_master data in dataframe:\n{df_customer_master}")
     print(f"customer_master data in json:\n{json_customer_master}")
 
@@ -46,12 +48,42 @@ create_customer_master_payload = {
     "cust_name": "Test Customer LLC",
     "cust_category": "Corporate",
     "cust_status": "ACTIVE",
-    "cust_contact_person_name": "Test Contact",
-    "cust_contact_person_designation": "Operations Manager",
-    "cust_phone_primary": f"+97150{TEST_RUN_ID}",
-    "cust_phone_secondary": f"+97151{TEST_RUN_ID}",
-    "cust_email_primary": f"test.customer.{TEST_RUN_ID}@example.com",
-    "cust_email_secondary": f"test.customer.secondary.{TEST_RUN_ID}@example.com",
+    "portal_system": "Test Portal",
+    "procurement_head_name": "procurement head name",
+    "procurement_head_phone_primary": "+971500000001",
+    "procurement_head_phone_secondary": "+971500000002",
+    "procurement_head_email_primary": "procurement.head.email.primary@example.com",
+    "procurement_head_email_secondary": "procurement.head.email.secondary@example.com",
+    "operation_incharge_name": "operation incharge name",
+    "operation_incharge_phone_primary": "+971500000001",
+    "operation_incharge_phone_secondary": "+971500000002",
+    "operation_incharge_email_primary": "operation.incharge.email.primary@example.com",
+    "operation_incharge_email_secondary": "operation.incharge.email.secondary@example.com",
+    "operation_head_name": "operation head name",
+    "operation_head_phone_primary": "+971500000001",
+    "operation_head_phone_secondary": "+971500000002",
+    "operation_head_email_primary": "operation.head.email.primary@example.com",
+    "operation_head_email_secondary": "operation.head.email.secondary@example.com",
+    "finance_incharge_name": "finance incharge name",
+    "finance_incharge_phone_primary": "+971500000001",
+    "finance_incharge_phone_secondary": "+971500000002",
+    "finance_incharge_email_primary": "finance.incharge.email.primary@example.com",
+    "finance_incharge_email_secondary": "finance.incharge.email.secondary@example.com",
+    "finance_head_name": "finance head name",
+    "finance_head_phone_primary": "+971500000001",
+    "finance_head_phone_secondary": "+971500000002",
+    "finance_head_email_primary": "finance.head.email.primary@example.com",
+    "finance_head_email_secondary": "finance.head.email.secondary@example.com",
+    "wcr_incharge_name": "wcr incharge name",
+    "wcr_incharge_phone_primary": "+971500000001",
+    "wcr_incharge_phone_secondary": "+971500000002",
+    "wcr_incharge_email_primary": "wcr.incharge.email.primary@example.com",
+    "wcr_incharge_email_secondary": "wcr.incharge.email.secondary@example.com",
+    "grn_incharge_name": "grn incharge name",
+    "grn_incharge_phone_primary": "+971500000001",
+    "grn_incharge_phone_secondary": "+971500000002",
+    "grn_incharge_email_primary": "grn.incharge.email.primary@example.com",
+    "grn_incharge_email_secondary": "grn.incharge.email.secondary@example.com",
     "cust_billing_address": "Dubai test billing address",
     "cust_service_address": "Dubai test service address",
     "cust_tax_registration_number": f"TRN{TEST_RUN_ID}",
@@ -76,8 +108,8 @@ if cust_id:
         "cust_id": cust_id,
         "cust_name": "Updated Test Customer LLC",
         "cust_category": "Key Account",
-        "cust_contact_person_name": "Updated Test Contact",
-        "cust_phone_primary": f"+97152{TEST_RUN_ID}",
+        "procurement_head_name": "Updated Test Contact",
+        "procurement_head_phone_primary": f"+97152{TEST_RUN_ID}",
         "cust_credit_period_days": 45,
         "cust_notes": "customer_master_update_test"
     }
@@ -93,7 +125,8 @@ if cust_id:
 
 if cust_id:
     delete_customer_master_payload = {
-        "cust_id": cust_id
+        "cust_id": cust_id,
+        "cust_org_id_fk": TEST_ORG_ID
     }
 
     start_time = time.perf_counter()

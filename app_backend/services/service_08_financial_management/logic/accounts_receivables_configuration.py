@@ -54,14 +54,18 @@ def get_accounts_receivables_tax_options(payload):
 
 def customer_identity(conn, org_id, customer_id):
     row = conn.execute(text("""
-        SELECT cust_id_pk,cust_name,cust_billing_address,cust_phone_primary,cust_phone_secondary,cust_tax_registration_number
+        SELECT cust_id_pk,cust_name,cust_billing_address,procurement_head_phone_primary,procurement_head_phone_secondary,cust_tax_registration_number
         FROM customer_master WHERE cust_id_pk=:customer AND cust_org_id_fk=:org
     """), {"customer": customer_id, "org": org_id}).mappings().one_or_none()
     if not row:
         raise ARValidationError("Customer not found for the authenticated organization.")
     if not row["cust_name"] or not row["cust_name"].strip():
         raise ARValidationError("Customer legal invoice name is required.")
-    return dict(row)
+    customer = dict(row)
+    # Preserve the AR snapshot/API keys while reading only revised master columns.
+    customer["cust_phone_primary"] = customer.pop("procurement_head_phone_primary")
+    customer["cust_phone_secondary"] = customer.pop("procurement_head_phone_secondary")
+    return customer
 
 
 def invoice_identity(conn, org_id, customer_id, existing=None):

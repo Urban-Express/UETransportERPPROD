@@ -33,7 +33,12 @@ URL = os.getenv('AR_REDESIGN_TEST_DATABASE_URL')
 
 
 def sql_script(path):
-    return re.sub(r'^\s*(BEGIN|COMMIT);\s*$', '', Path(path).read_text(), flags=re.M)
+    source = Path(path).read_text()
+    if Path(path).name == 'seed_urban_express.sql':
+        # Only seed data inside the fixture's transaction. The file also contains
+        # later manual rollback/read-only verification commands for deployment.
+        source = re.split(r'^\s*COMMIT;\s*$', source, maxsplit=1, flags=re.M)[0]
+    return re.sub(r'^\s*(BEGIN|COMMIT);\s*$', '', source, flags=re.M)
 
 
 @unittest.skipUnless(URL, 'AR_REDESIGN_TEST_DATABASE_URL must name a disposable loopback *_tests database.')
@@ -108,7 +113,7 @@ class ARPostgresCase(unittest.TestCase):
         with self.engine.begin() as c:
             c.exec_driver_sql('TRUNCATE accounts_receivables,accounts_receivables_workflow_requests,workflow_instances,contracts_management,customer_master,organization_tax_configuration,organization_invoice_configuration RESTART IDENTITY CASCADE')
             c.exec_driver_sql("UPDATE organization_master SET org_name='Urban Express' WHERE org_id_pk=77")
-            c.exec_driver_sql("INSERT INTO customer_master(cust_id_pk,cust_org_id_fk,cust_code,cust_name,cust_category,cust_tax_registration_number,cust_billing_address,cust_phone_primary) VALUES(10,77,'C10','Saraj Al Jamal Passengers Transport By Buses L.L.C','TEST','104885870600003','Dubai UAE','+971504112658'),(11,88,'C11','Foreign customer','TEST',NULL,NULL,NULL),(12,77,'C12','Second customer','TEST',NULL,NULL,NULL)")
+            c.exec_driver_sql("INSERT INTO customer_master(cust_id_pk,cust_org_id_fk,cust_code,cust_name,cust_category,cust_tax_registration_number,cust_billing_address,procurement_head_phone_primary) VALUES(10,77,'C10','Saraj Al Jamal Passengers Transport By Buses L.L.C','TEST','104885870600003','Dubai UAE','+971504112658'),(11,88,'C11','Foreign customer','TEST',NULL,NULL,NULL),(12,77,'C12','Second customer','TEST',NULL,NULL,NULL)")
             c.exec_driver_sql("SET LOCAL ar_rollout.urban_express_org_id='77'")
             c.execute(text(sql_script(MIGRATIONS / 'seed_urban_express.sql')))
             for contract, org, customer, dep in ((9,77,10,20), (10,88,11,21), (11,77,12,20)):

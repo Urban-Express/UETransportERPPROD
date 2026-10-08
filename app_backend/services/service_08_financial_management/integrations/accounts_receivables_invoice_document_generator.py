@@ -49,6 +49,12 @@ def amount_in_words(amount, currency="AED"):
 def generate_ar_invoice_document(invoice):
     identity = invoice["ar_invoice_identity_snapshot"]
     org, customer, config = (identity[key] for key in ("organization", "customer", "invoice_configuration"))
+    # Saved AR keys (including explicit blanks) remain authoritative for historical
+    # snapshots. Also accept revised contact keys without changing the snapshot.
+    customer_phones = [
+        customer.get("cust_phone_primary", customer.get("procurement_head_phone_primary")),
+        customer.get("cust_phone_secondary", customer.get("procurement_head_phone_secondary")),
+    ]
     stream = BytesIO()
     style = ParagraphStyle("AR", fontName="ARDejaVu", fontSize=8, leading=11, spaceAfter=4)
     heading = ParagraphStyle("Heading", parent=style, fontName="ARDejaVuBold", fontSize=18, leading=23, textColor=colors.HexColor("#164a59"))
@@ -64,7 +70,7 @@ def generate_ar_invoice_document(invoice):
              Spacer(1, 5 * mm), p("TAX INVOICE", heading), p(org["org_name"]), p(org.get("org_address")),
              p(f"TRN: {config['organization_trn']}"), Spacer(1, 3 * mm)]
     bill_to = [p("BILL TO"), p(customer["cust_name"]), p(customer.get("cust_billing_address")),
-               p("Telephone: " + " / ".join(filter(None, [customer.get("cust_phone_primary"), customer.get("cust_phone_secondary")]))),
+               p("Telephone: " + " / ".join(filter(None, customer_phones))),
                p(f"TRN: {customer.get('cust_tax_registration_number') or ''}")]
     info = [p(f"Invoice number: {invoice['ar_invoice_number']}"), p(f"Invoice date: {invoice['ar_invoice_date']}"),
             p(f"Due date: {invoice.get('ar_due_date') or ''}"),
