@@ -161,7 +161,7 @@ class WorkflowTransactionPendingResponseTests(unittest.TestCase):
                  "is_contracts_management_workflow_approved",
                  return_value=(False, pending_workflow("CONTRACTS_MANAGEMENT", "CREATE")),
              ):
-            result = contracts_management_create_data.create_contract({"cont_org_id_fk": 1, "cont_contract_number": "CT-1"})
+            result = contracts_management_create_data.create_contract({"cont_revenue_basis": "PER_BUS", "cont_org_id_fk": 1, "cont_contract_number": "CT-1"})
         self.assert_pending_submission(result, "CONTRACTS_MANAGEMENT", "CREATE")
 
         existing = pd.DataFrame([{"cont_id_pk": 99, "cont_org_id_fk": 1, "cont_contract_number": "CT-1", "cont_link_path": None}])
@@ -174,7 +174,7 @@ class WorkflowTransactionPendingResponseTests(unittest.TestCase):
                  "is_contracts_management_workflow_approved",
                  return_value=(False, pending_workflow("CONTRACTS_MANAGEMENT", "UPDATE")),
              ):
-            result = contracts_management_update_data.update_contract({"cont_id": 99, "cont_org_id_fk": 1, "cont_contract_number": "CT-1"})
+            result = contracts_management_update_data.update_contract({"cont_revenue_basis": "PER_BUS", "cont_id": 99, "cont_org_id_fk": 1, "cont_contract_number": "CT-1"})
         self.assert_pending_submission(result, "CONTRACTS_MANAGEMENT", "UPDATE", domain_reference_id=99)
 
     def test_contract_document_is_staged_before_pending_workflow(self):
@@ -203,6 +203,7 @@ class WorkflowTransactionPendingResponseTests(unittest.TestCase):
              ) as workflow_mock:
             result = contracts_management_create_data.create_contract(
                 {
+                    "cont_revenue_basis": "PER_BUS",
                     "cont_org_id_fk": 1,
                     "cont_contract_number": "CT-1",
                     "file_path": "/tmp/signed.pdf",
@@ -259,6 +260,7 @@ class WorkflowTransactionPendingResponseTests(unittest.TestCase):
              ) as workflow_mock:
             result = contracts_management_update_data.update_contract(
                 {
+                    "cont_revenue_basis": "PER_BUS",
                     "cont_id": 99,
                     "cont_org_id_fk": 1,
                     "cont_contract_number": "CT-1",
@@ -287,6 +289,7 @@ class WorkflowTransactionPendingResponseTests(unittest.TestCase):
              patch.object(contracts_management_create_data, "is_contracts_management_workflow_approved") as workflow_mock:
             result = contracts_management_create_data.create_contract(
                 {
+                    "cont_revenue_basis": "PER_BUS",
                     "cont_org_id_fk": 1,
                     "cont_contract_number": "CT-1",
                     "file_path": "/tmp/signed.pdf",
@@ -325,6 +328,7 @@ class WorkflowTransactionPendingResponseTests(unittest.TestCase):
              ) as cleanup_mock:
             result = contracts_management_create_data.create_contract(
                 {
+                    "cont_revenue_basis": "PER_BUS",
                     "cont_org_id_fk": 1,
                     "cont_contract_number": "CT-1",
                     "service_request_id": "REQ",

@@ -88,6 +88,9 @@ CREATE TABLE public.contracts_management
 
     cont_small_bus_count_lt_17              INTEGER NOT NULL DEFAULT 0,
 
+    cont_no_of_days                         NUMERIC(14,2),
+    cont_no_of_kms                          NUMERIC(14,2),
+
     /*
        No. of buses is calculated automatically and must not be entered
        separately by the front end.
@@ -113,6 +116,12 @@ CREATE TABLE public.contracts_management
     cont_medium_bus_rate_pm                 NUMERIC(14,2),
 
     cont_small_bus_rate_pm                  NUMERIC(14,2),
+
+    cont_per_day_rate                       NUMERIC(14,2),
+    cont_per_km_rate                        NUMERIC(14,2),
+
+    /* Later-established value field; no automatic calculation. */
+    total_contract_value                    DOUBLE PRECISION,
 
     /*
     ---------------------------------------------------------------------------
@@ -172,6 +181,8 @@ CREATE TABLE public.contracts_management
     cont_extra_km_charge_per_km             NUMERIC(12,2),
 
     cont_notes                              TEXT,
+    cont_link_path                          TEXT,
+    cont_approval_status                    VARCHAR(50),
 
     /*
     ---------------------------------------------------------------------------
@@ -323,9 +334,11 @@ CREATE TABLE public.contracts_management
         (
             cont_revenue_basis IN
             (
-                'PER_PASSENGER',
                 'PER_BUS',
-                'PER_PASSENGER_AND_PER_BUS'
+                'PER_PASSENGER',
+                'PER_PASSENGER_AND_PER_BUS',
+                'PER_DAY',
+                'PER_KILOMETER'
             )
         ),
 
@@ -403,6 +416,21 @@ CREATE TABLE public.contracts_management
                     OR cont_small_bus_rate_pm IS NOT NULL
                 )
             )
+
+            OR
+            (
+                cont_revenue_basis = 'PER_DAY'
+                AND cont_no_of_days IS NOT NULL
+                AND cont_no_of_days > 0
+                AND cont_per_day_rate IS NOT NULL
+            )
+            OR
+            (
+                cont_revenue_basis = 'PER_KILOMETER'
+                AND cont_no_of_kms IS NOT NULL
+                AND cont_no_of_kms > 0
+                AND cont_per_km_rate IS NOT NULL
+            )
         ),
 
     /*
@@ -410,6 +438,15 @@ CREATE TABLE public.contracts_management
     Monetary validation
     ---------------------------------------------------------------------------
     */
+
+    CONSTRAINT ck_contracts_management_day_km_nonnegative
+        CHECK
+        (
+            (cont_no_of_days IS NULL OR cont_no_of_days >= 0)
+            AND (cont_per_day_rate IS NULL OR cont_per_day_rate >= 0)
+            AND (cont_no_of_kms IS NULL OR cont_no_of_kms >= 0)
+            AND (cont_per_km_rate IS NULL OR cont_per_km_rate >= 0)
+        ),
 
     CONSTRAINT ck_contracts_management_rates
         CHECK
@@ -567,12 +604,3 @@ CREATE INDEX idx_contracts_management_dates
     );
 
 COMMIT;
-
--- Alterations to contract management table
-select * from contracts_management;
-
-alter table contracts_management
-add column cont_no_of_days numeric(14,2),
-add column cont_per_day_rate numeric(14,2),
-add column cont_no_of_kms numeric(14,2),
-add column cont_per_km_rate numeric(14,2);

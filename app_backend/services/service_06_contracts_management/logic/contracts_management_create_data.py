@@ -2,6 +2,10 @@ from sqlalchemy import text
 import pandas as pd
 
 from app_backend.services.service_01_organization_management.data.db_connect_engine import db_engine
+from app_backend.services.service_06_contracts_management.logic.contracts_management_validation import (
+    CONTRACT_DAY_KM_FIELDS,
+    validate_contract_commercial_values,
+)
 from app_backend.services.firebase_file_pointer_helpers import (
     has_trusted_workflow_document_path,
 )
@@ -29,12 +33,6 @@ from app_backend.services.service_07_alerts_wf_engine.workflow_security import (
 
 
 CONTRACT_EPHEMERAL_DOCUMENT_FIELDS = ("file_path", "contract_file_path")
-CONTRACT_DAY_KM_FIELDS = (
-    "cont_no_of_days",
-    "cont_per_day_rate",
-    "cont_no_of_kms",
-    "cont_per_km_rate",
-)
 
 
 def get_contract_insert_params(payload: dict):
@@ -246,6 +244,9 @@ def create_contracts_management(
     content_type: str | None = None,
     conn=None,
 ):
+    validation_error = validate_contract_commercial_values(payload)
+    if validation_error:
+        return {"error": validation_error}
     contract_engine = None
     try:
         workflow_pending_created = False

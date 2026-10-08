@@ -546,6 +546,7 @@ class FirebaseCurrentPointerCorrectionTests(unittest.TestCase):
              ):
             contract_result = contracts_management_update_data.update_contract(
                 {
+                    "cont_revenue_basis": "PER_BUS",
                     "cont_id": 99,
                     "cont_org_id_fk": 1,
                     "cont_contract_number": "CT-1",
@@ -681,6 +682,7 @@ class FirebaseCurrentPointerCorrectionTests(unittest.TestCase):
              ):
             contract_result = contracts_management_update_data.update_contract(
                 {
+                    "cont_revenue_basis": "PER_BUS",
                     "cont_id": 99,
                     "cont_org_id_fk": 1,
                     "cont_contract_number": "CT-1",
@@ -769,6 +771,7 @@ class FirebaseCurrentPointerCorrectionTests(unittest.TestCase):
 
         contract_conn = QueueConnection(update_mapping("cont_id_pk", "cont_link_path"))
         contract_payload = {
+            "cont_revenue_basis": "PER_BUS",
             "cont_id": 99,
             "cont_org_id_fk": 1,
             "cont_contract_number": "CT-1",
@@ -938,6 +941,7 @@ class FirebaseCurrentPointerCorrectionTests(unittest.TestCase):
              ):
             contracts_management_create_data.create_contract(
                 {
+                    "cont_revenue_basis": "PER_BUS",
                     "cont_org_id_fk": 1,
                     "cont_contract_number": "CT-1",
                     "cont_link_path": "C0",

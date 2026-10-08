@@ -26,6 +26,9 @@ from app_backend.services.service_07_alerts_wf_engine.workflow_document_cleanup 
 from app_backend.services.service_07_alerts_wf_engine.workflow_security import (
     is_trusted_workflow_execution,
 )
+from app_backend.services.service_06_contracts_management.logic.contracts_management_validation import (
+    validate_contract_commercial_values,
+)
 
 
 def update_contracts_management(
@@ -35,6 +38,9 @@ def update_contracts_management(
     content_type: str | None = None,
     conn=None,
 ):
+    validation_error = validate_contract_commercial_values(payload, defer_omitted_new_fields=True)
+    if validation_error:
+        return {"error": validation_error}
     contract_engine = None
     try:
         workflow_pending_created = False
@@ -49,7 +55,8 @@ def update_contracts_management(
             return {"error": "cont_id is required."}
 
         get_cont_id = text("""
-            select cont_id_pk, cont_org_id_fk, cont_contract_number, cont_link_path
+            select cont_id_pk, cont_org_id_fk, cont_contract_number, cont_link_path,
+                   cont_no_of_days, cont_per_day_rate, cont_no_of_kms, cont_per_km_rate
             from contracts_management
             where cont_id_pk = :cont_id
             and cont_org_id_fk = :cont_org_id_fk
@@ -69,6 +76,15 @@ def update_contracts_management(
             return {"error": "Contract ID not found."}
 
         existing_contract = df_cont_id.iloc[0].to_dict()
+        # Validate omitted Day/Km values against the row without putting them in
+        # the workflow snapshot or turning them into stale UPDATE assignments.
+        effective_payload = {
+            **{field: existing_contract.get(field) for field in CONTRACT_DAY_KM_FIELDS},
+            **payload,
+        }
+        validation_error = validate_contract_commercial_values(effective_payload)
+        if validation_error:
+            return {"error": validation_error}
         reference_error = validate_contract_references_for_organization(
             payload,
             cont_org_id_fk,
@@ -185,7 +201,7 @@ def update_contracts_management(
                 cont_km_cap_pm_per_bus = :cont_km_cap_pm_per_bus,
                 cont_extra_km_charge_per_km = :cont_extra_km_charge_per_km,
 {day_km_set_clause}\
-                total_contract_value = :total_contract_value,
+                total_contract_value = COALESCE(:total_contract_value, total_contract_value),
                 cont_notes = :cont_notes,
 {document_pointer_set_clause}\
                 cont_approval_status = :cont_approval_status,

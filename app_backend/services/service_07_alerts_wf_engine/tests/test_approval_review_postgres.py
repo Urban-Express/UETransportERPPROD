@@ -91,7 +91,7 @@ class ApprovalReviewPostgresTests(unittest.TestCase):
                 script=re.sub(r'^\s*(BEGIN|COMMIT);\s*$', '', script, flags=re.M)
                 c.exec_driver_sql(script)
             # Existing fields used by contract CRUD are absent from the older bootstrap.
-            c.exec_driver_sql('ALTER TABLE contracts_management ADD COLUMN cont_link_path TEXT, ADD COLUMN cont_approval_status TEXT, ADD COLUMN total_contract_value NUMERIC(14,2)')
+            c.exec_driver_sql('ALTER TABLE contracts_management ADD COLUMN IF NOT EXISTS cont_link_path TEXT, ADD COLUMN IF NOT EXISTS cont_approval_status TEXT, ADD COLUMN IF NOT EXISTS total_contract_value NUMERIC(14,2)')
             for name in ('service_06_contracts_management/data/contracts_management_workflow_requests.sql',
                          'service_08_financial_management/data/accounts_payables_workflow_requests.sql',
                          'service_08_financial_management/data/accounts_receivables_workflow_requests.sql'):

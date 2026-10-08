@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 import sys
-from typing import Any, Callable, Optional
+from typing import Any, Callable, ClassVar, Optional
 
 import uvicorn
 from fastapi import FastAPI, File, Form, HTTPException, Request, Security, UploadFile
@@ -10,7 +10,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, model_validator
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -29,6 +29,10 @@ from app_backend.services.service_06_contracts_management.logic.contracts_manage
 from app_backend.services.service_06_contracts_management.logic.contracts_management_get_data import get_contract, get_contract_by_id
 from app_backend.services.service_06_contracts_management.logic.contracts_management_update_data import update_contract
 from app_backend.services.service_06_contracts_management.logic.contracts_management_delete_data import delete_contract
+from app_backend.services.service_06_contracts_management.logic.contracts_management_validation import (
+    ContractRevenueBasis,
+    validate_contract_commercial_values,
+)
 from app_backend.services.service_06_contracts_management.integrations.firebase_contract_document_upload import upload_contract_document
 from app_backend.services.service_06_contracts_management.integrations.firebase_contract_document_download import download_contract_document
 from app_backend.services.auth_context import (
@@ -116,6 +120,7 @@ class CustomerMasterDeletePayload(BaseModel):
 
 
 class ContractsManagementPayload(BaseModel):
+    _defer_omitted_new_fields: ClassVar[bool] = False
     user_principal_name: str
     cont_org_id_fk: int
     cont_cust_id_fk: int
@@ -125,7 +130,7 @@ class ContractsManagementPayload(BaseModel):
     cont_start_date: str
     cont_end_date: Optional[str] = None
     cont_status: Optional[str] = "DRAFT"
-    cont_revenue_basis: str
+    cont_revenue_basis: ContractRevenueBasis
     cont_currency_code: Optional[str] = "AED"
     cont_no_of_passengers: Optional[int] = 0
     cont_big_bus_count_gt_34: Optional[int] = 0
@@ -162,8 +167,20 @@ class ContractsManagementPayload(BaseModel):
     created_by: Optional[str] = None
     updated_by: Optional[str] = None
 
+    @model_validator(mode="after")
+    def validate_commercial_values(self):
+        omitted = set(CONTRACT_DAY_KM_FIELDS) - self.model_fields_set
+        error = validate_contract_commercial_values(
+            self.model_dump(exclude=omitted),
+            defer_omitted_new_fields=self._defer_omitted_new_fields,
+        )
+        if error:
+            raise ValueError(error)
+        return self
+
 
 class ContractsManagementUpdatePayload(ContractsManagementPayload):
+    _defer_omitted_new_fields: ClassVar[bool] = True
     cont_id: Optional[int] = None
     cont_id_pk: Optional[int] = None
 
