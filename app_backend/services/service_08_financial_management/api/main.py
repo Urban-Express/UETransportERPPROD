@@ -66,6 +66,9 @@ from app_backend.services.service_08_financial_management.logic.accounts_receiva
     update_accounts_receivable,
     update_ar_collection_status,
 )
+from app_backend.services.service_08_financial_management.logic.accounts_receivables_mark_received import (
+    mark_ar_invoice_received,
+)
 from app_backend.services.service_08_financial_management.logic.accounts_receivables_delete_data import (
     delete_accounts_receivable,
 )
@@ -332,6 +335,14 @@ class AccountsReceivableCollectionStatusPayload(BaseModel):
     ar_id_pk: int = Field(gt=0)
     ar_org_id_fk: int = Field(gt=0)
     ar_collection_status: Literal["OUTSTANDING", "PARTIALLY_RECEIVED", "RECEIVED"]
+    ar_expected_revision: int = Field(ge=0)
+
+
+class AccountsReceivableMarkReceivedPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    ar_id_pk: int = Field(gt=0)
+    ar_org_id_fk: int = Field(gt=0)
     ar_expected_revision: int = Field(ge=0)
 
 
@@ -968,6 +979,31 @@ def update_ar_collection_status_endpoint(
     result = update_ar_collection_status(
         bind_ar_payload(payload, auth_context, set_updated_by=True)
     )
+    if result.get("error"):
+        return JSONResponse(
+            status_code=result["status_code"],
+            content={"success": False, "error": result["error"], "error_code": result["error_code"]},
+        )
+    return success_response(_to_json_safe(result))
+
+
+@app.post("/api/v1/accounts-receivables/mark-received", tags=["Accounts Receivable"])
+def mark_ar_invoice_received_endpoint(
+    payload: AccountsReceivableMarkReceivedPayload,
+    auth_context: dict[str, Any] = Security(get_authenticated_context),
+) -> Any:
+    try:
+        bound_payload = bind_ar_payload(payload, auth_context, set_updated_by=True)
+    except HTTPException as exc:
+        # This strict model has no client principal/audit fields, so a binding
+        # 403 denotes the submitted organization failing the existing org check.
+        if exc.status_code != 403:
+            raise
+        return JSONResponse(
+            status_code=403,
+            content={"success": False, "error": exc.detail, "error_code": "AR_ORGANIZATION_MISMATCH"},
+        )
+    result = mark_ar_invoice_received(bound_payload)
     if result.get("error"):
         return JSONResponse(
             status_code=result["status_code"],
